@@ -332,6 +332,7 @@ thread_foreach (thread_action_func *func, void *aux)
 }
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
+/* TODO IMPLEMENT ME */
 void
 thread_set_priority (int new_priority) 
 {
@@ -339,6 +340,7 @@ thread_set_priority (int new_priority)
 }
 
 /* Returns the current thread's priority. */
+/* TODO IMPLEMENT ME */
 int
 thread_get_priority (void) 
 {
