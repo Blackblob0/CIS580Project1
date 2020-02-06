@@ -7,6 +7,7 @@ CIS 520 - Programming Project #1
 >> Fill in the names and email addresses of your group members.
 
 Weston Chan <wwchan@ksu.edu>
+Jarod DeWeese <jdeweese1@ksu.edu>
 
 ...
 
