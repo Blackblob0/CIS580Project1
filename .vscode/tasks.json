@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "alarm-multiple",
+            "type": "shell",
+            "command": "cd ~/cis520/pintos/src/threads/build && /home/j/jdeweese1/cis520/pintos_group/src/utils/pintos --gdb -v -- run alarm-multiple",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "make pintos threads",
+            "type": "shell",
+            "command": "pwd && source ~/.bashrc && cd ~/cis520/pintos/src/threads/ && make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
