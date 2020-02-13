@@ -3,8 +3,10 @@
     "",
     "\\src",
     "\\src\\devices",
+    "\\src\\lib",
+    "\\src\\lib\\kernel",
     "\\src\\threads"
   ],
-  "SelectedNode": "\\src\\devices\\timer.c",
+  "SelectedNode": "\\src\\devices\\timer.h",
   "PreviewInSolutionExplorer": false
 }

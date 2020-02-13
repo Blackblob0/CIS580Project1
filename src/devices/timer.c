@@ -107,11 +107,7 @@ void
 timer_sleep (int64_t ticks)
 {
   int64_t start = timer_ticks ();
-  printf("ticks %d\n", ticks);
   ASSERT (intr_get_level () == INTR_ON);
-
-  struct thread *t = thread_current ();
-  // calculate when we need to wake up
 
   struct sleeping_thread* st = malloc(sizeof(struct sleeping_thread));
   struct semaphore* sema;
@@ -122,7 +118,8 @@ timer_sleep (int64_t ticks)
   list_insert_ordered(&sleeping_threads, &(st->elem), thread_earlier_wake_up, NULL);
 
   sema_down(sema);
-
+  //TODO Figure out why sema is NULL
+  // Make threads sleep and wakeup
 }
 
 
@@ -217,7 +214,7 @@ timer_sleep (int64_t ticks)
     thread_tick ();
 
     struct sleeping_thread* first_sleeping_thread = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
-    while (list_head(&sleeping_threads) != NULL && first_sleeping_thread->wake_up_tick < ticks) {
+    while (list_head(&sleeping_threads) != NULL && first_sleeping_thread->wake_up_tick <= ticks) {
         sema_up(first_sleeping_thread->sema);
         list_pop_front(&sleeping_threads);
         first_sleeping_thread = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
