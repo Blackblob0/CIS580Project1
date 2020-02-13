@@ -7,31 +7,18 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace MonoGameWindowsStarter
-{
-    class Wall : GameObject
-    {
-        Game1 game;
-        public CollisionRectangle collision;
-
-        public Wall(Game1 game, float X, float Y, float Width, float Height)
-        {
-            this.game = game;
-            collision = new CollisionRectangle(X, Y, Width, Height);
+namespace MonoGameWindowsStarter {
+    public class Wall : GameObject {
+        public Wall(Game1 game, float X, float Y, float Width, float Height) : base(game, X, Y, Width, Height) {
+            game.Walls.Add(this);
         }
 
-        public void LoadContent()
-        {
-        }
+        public override void LoadContent() { }
 
-        public void Update(KeyboardState oldKeyboardState, KeyboardState newKeyboardState)
-        {
-        }
+        public override void Update() { }
 
-        public void Draw(GameTime gameTime, SpriteBatch spriteBatch, bool showHitBoxes)
-        {
-
-            spriteBatch.Draw(game.pixel, collision, Color.Red);
+        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch, bool showHitBoxes) {
+            base.Draw(gameTime, spriteBatch, true, Color.Blue);
         }
     }
 }

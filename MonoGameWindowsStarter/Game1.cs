@@ -3,42 +3,40 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections;
 
-namespace MonoGameWindowsStarter
-{
+namespace MonoGameWindowsStarter {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
-    {
+    public class Game1 : Game {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        ArrayList gameObjects = new ArrayList();
+        public ArrayList Walls = new ArrayList();
+        public ArrayList Coins = new ArrayList();
+        public ArrayList[] GameObjects;
 
-        KeyboardState oldKeyboardState;
-        KeyboardState newKeyboardState;
+        public KeyboardState oldKeyboardState;
+        public KeyboardState newKeyboardState;
         bool showHitBoxes = false;
         public int hitBoxTransparency;
-        Player player;
+        public Player player;
 
         public Texture2D pixel;
+        public Texture2D circle;
+        public SpriteFont spriteFont;
 
         public float gravity;
 
-        public Game1()
-        {
+        public Game1() {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            player = new Player(this, 500, 500, 125, 250);
-            gameObjects.Add(player);
-            gameObjects.Add(new Wall(this, 0, 1000, 1920, 100));
-            gameObjects.Add(new Coin(this, 800, 600));
-            gameObjects.Add(new Coin(this, 950, 800));
 
-            foreach (GameObject obj in gameObjects)
-                if (obj is Wall || obj is Coin)
-                    player.interactibleObjects.Add(obj);
+            GameObjects = new ArrayList[] { Walls, Coins };
 
+            new Player(this, 500, 500, 125, 250);
+            new Wall(this, -1000, 1000, 3920, 100);
+            new Coin(this, 800, 600);
+            new Coin(this, 950, 800);
         }
 
         /// <summary>
@@ -47,8 +45,7 @@ namespace MonoGameWindowsStarter
         /// related content.  Calling base.Initialize will enumerate through any components
         /// and initialize them as well.
         /// </summary>
-        protected override void Initialize()
-        {
+        protected override void Initialize() {
             // TODO: Add your initialization logic here
 
             base.Initialize();
@@ -64,15 +61,19 @@ namespace MonoGameWindowsStarter
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
         /// </summary>
-        protected override void LoadContent()
-        {
+        protected override void LoadContent() {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            pixel = Content.Load<Texture2D>("Pixel");
+            pixel = Content.Load<Texture2D>("Sprites/Pixel");
+            circle = Content.Load<Texture2D>("Sprites/Circle");
+            spriteFont = Content.Load<SpriteFont>("Fonts/MangaTemple18");
 
-            foreach(GameObject obj in gameObjects)
+            player.LoadContent();
+
+            GameObject.GameObjectIterator(GameObjects, (obj) => {
                 obj.LoadContent();
+            });
 
             // TODO: use this.Content to load your game content here
         }
@@ -81,8 +82,7 @@ namespace MonoGameWindowsStarter
         /// UnloadContent will be called once per game and is the place to unload
         /// game-specific content.
         /// </summary>
-        protected override void UnloadContent()
-        {
+        protected override void UnloadContent() {
             // TODO: Unload any non ContentManager content here
         }
 
@@ -91,8 +91,7 @@ namespace MonoGameWindowsStarter
         /// checking for collisions, gathering input, and playing audio.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Update(GameTime gameTime)
-        {
+        protected override void Update(GameTime gameTime) {
             oldKeyboardState = newKeyboardState;
             newKeyboardState = Keyboard.GetState();
 
@@ -101,8 +100,12 @@ namespace MonoGameWindowsStarter
 
             // TODO: Add your update logic here
             base.Update(gameTime);
-            foreach (GameObject obj in gameObjects)
-                obj.Update(oldKeyboardState, newKeyboardState);
+
+            player.Update();
+            GameObject.GameObjectIterator(GameObjects, (obj) => {
+                obj.Update();
+            });
+
 
             if (newKeyboardState.IsKeyDown(Keys.X) && oldKeyboardState.IsKeyUp(Keys.X))
                 showHitBoxes = !showHitBoxes;
@@ -112,14 +115,15 @@ namespace MonoGameWindowsStarter
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Draw(GameTime gameTime)
-        {
+        protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
             spriteBatch.Begin();
-            foreach (GameObject obj in gameObjects)
+            player.Draw(gameTime, spriteBatch, showHitBoxes);
+            GameObject.GameObjectIterator(GameObjects, (obj) => {
                 obj.Draw(gameTime, spriteBatch, showHitBoxes);
+            });
             spriteBatch.End();
 
             base.Draw(gameTime);

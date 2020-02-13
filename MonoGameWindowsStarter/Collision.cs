@@ -12,24 +12,24 @@ namespace MonoGameWindowsStarter
         // CollisionCircle methods
         public static bool CollidesWith(this CollisionCircle c, CollisionCircle other)
         {
-            return Math.Pow(other.Radius + c.Radius, 2) < Math.Pow(other.Center.X - c.Center.X, 2) + Math.Pow(other.Center.Y - c.Center.Y, 2);
+            return c.Active && other.Active && Math.Pow(other.Radius + c.Radius, 2) < Math.Pow(other.Center.X - c.Center.X, 2) + Math.Pow(other.Center.Y - c.Center.Y, 2);
         }
 
         public static bool CollidesWith(this CollisionCircle c, CollisionRectangle r)
         {
             float clampedX = Math.Max(Math.Min(c.Center.X, r.X + r.Width), r.X);
             float clampedY = Math.Max(Math.Min(c.Center.Y, r.Y + r.Height), r.Y);
-            return Math.Pow(c.Radius, 2) > Math.Pow(clampedX - c.Center.X, 2) + Math.Pow(clampedY - c.Center.Y, 2);
+            return c.Active && r.Active && Math.Pow(c.Radius, 2) > Math.Pow(clampedX - c.Center.X, 2) + Math.Pow(clampedY - c.Center.Y, 2);
         }
 
         public static bool CollidesWith(this CollisionCircle c, Vector2 v)
         {
-            return Math.Pow(c.Radius, 2) > Math.Pow(c.Center.X - v.X, 2) + Math.Pow(c.Center.Y - v.Y, 2);
+            return c.Active && Math.Pow(c.Radius, 2) > Math.Pow(c.Center.X - v.X, 2) + Math.Pow(c.Center.Y - v.Y, 2);
         }
         // Collision Rectangle methods
         public static bool CollidesWith(this CollisionRectangle r, CollisionRectangle other)
         {
-            return !(
+            return r.Active && other.Active && !(
                 r.X + r.Width < other.X ||
                 r.X > other.X + other.Width ||
                 r.Y + r.Height < other.Y ||
@@ -44,7 +44,7 @@ namespace MonoGameWindowsStarter
 
         public static bool CollidesWith(this CollisionRectangle r, Vector2 v)
         {
-            return (
+            return r.Active && (
                 r.X < v.X &&
                 r.X + r.Width > v.X &&
                 r.Y < v.Y &&

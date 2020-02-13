@@ -13,6 +13,7 @@ namespace MonoGameWindowsStarter
         public float Y;
         public float Width;
         public float Height;
+        public bool Active;
         public Vector2 Center
         {
             get => new Vector2(X + Width / 2, Y + Height / 2);
@@ -24,6 +25,7 @@ namespace MonoGameWindowsStarter
             this.Y = Y;
             this.Width = Width;
             this.Height = Height;
+            Active = true;
         }
 
         public static implicit operator Rectangle(CollisionRectangle r)

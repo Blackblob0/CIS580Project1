@@ -12,6 +12,7 @@ namespace MonoGameWindowsStarter
         public float X;
         public float Y;
         public float Radius;
+        public bool Active;
         public Vector2 Center
         {
             get => new Vector2(X + Radius, Y + Radius);
@@ -22,6 +23,7 @@ namespace MonoGameWindowsStarter
             this.X = X;
             this.Y = Y;
             this.Radius = Radius;
+            Active = true;
         }
 
         public static implicit operator Rectangle(CollisionCircle c)
