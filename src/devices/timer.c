@@ -94,7 +94,7 @@ timer_sleep (int64_t ticks)
   ASSERT (intr_get_level () == INTR_ON);
   while (timer_elapsed (start) < ticks)
     thread_yield ();
-
+}
 //
 //  queues implemented in list.h
 //  to sleep a thread, thread_block, can also use a semaphore
