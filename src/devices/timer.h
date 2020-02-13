@@ -3,9 +3,16 @@
 
 #include <round.h>
 #include <stdint.h>
+#include "threads/synch.h"
 
 /* Number of timer interrupts per second. */
 #define TIMER_FREQ 100
+
+struct sleeping_thread {
+	struct semaphore* sema;
+	int64_t wake_up_tick;
+	struct list_elem elem;
+};
 
 void timer_init (void);
 void timer_calibrate (void);

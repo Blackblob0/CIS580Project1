@@ -7,6 +7,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+#include <stdlib.h>
 
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -20,6 +21,8 @@
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 
+static struct list sleeping_threads;
+
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
 static unsigned loops_per_tick;
@@ -30,6 +33,18 @@ static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
+/* Returns true if thread A will wake up before B, false
+   otherwise. */
+static bool
+thread_earlier_wake_up(const struct list_elem* a_, const struct list_elem* b_,
+    void* aux UNUSED)
+{
+    const struct sleeping_thread* a = list_entry(a_, struct sleeping_thread, elem);
+    const struct sleeping_thread* b = list_entry(b_, struct sleeping_thread, elem);
+
+    return a->wake_up_tick > b->wake_up_tick;
+}
+
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -37,6 +52,7 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+  list_init(&sleeping_threads);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -86,16 +102,37 @@ timer_elapsed (int64_t then)
 
 /* Sleeps for approximately TICKS timer ticks.  Interrupts must
    be turned on. */
+// timer_sleep correctish
 void
 timer_sleep (int64_t ticks)
 {
   int64_t start = timer_ticks ();
-
+  printf("ticks %d\n", ticks);
   ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks)
-    thread_yield ();
+
+  struct thread *t = thread_current ();
+  // calculate when we need to wake up
+
+  struct sleeping_thread* st = malloc(sizeof(struct sleeping_thread));
+  struct semaphore* sema;
+  sema_init(sema, 0);
+  st->sema = sema;
+  st->wake_up_tick = start + ticks;
+
+  list_insert_ordered(&sleeping_threads, &(st->elem), thread_earlier_wake_up, NULL);
+
+  sema_down(sema);
+
 }
-//
+
+
+// oroginal priority
+// new rpriority
+// resources it is holding
+// we need to know who to give priority to
+// need to know who is using a resource
+// who do we need to donate
+// know who we have donated priority to
 //  queues implemented in list.h
 //  to sleep a thread, thread_block, can also use a semaphore
 //  keep track of threads that are sleeping sorted by time to wake up 20 to 50 lines
@@ -178,6 +215,13 @@ timer_sleep (int64_t ticks)
   {
     ticks++;
     thread_tick ();
+
+    struct sleeping_thread* first_sleeping_thread = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
+    while (list_head(&sleeping_threads) != NULL && first_sleeping_thread->wake_up_tick < ticks) {
+        sema_up(first_sleeping_thread->sema);
+        list_pop_front(&sleeping_threads);
+        first_sleeping_thread = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
+    }
   }
 
 /* Returns true if LOOPS iterations waits for more than one timer
