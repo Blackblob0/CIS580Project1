@@ -7,7 +7,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
-#include <stdlib.h>
+#include "threads/malloc.h"
 
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -120,13 +120,13 @@ timer_sleep (int64_t ticks)
   ASSERT (intr_get_level () == INTR_ON);
 
   // Go to sleep
-  struct sleeping_thread st;
-  sleeping_thread_init(&st);
-  st.wake_up_tick = start + ticks;
+  struct sleeping_thread * st = malloc(sizeof(struct sleeping_thread));
+  sleeping_thread_init(st);
+  st->wake_up_tick = start + ticks;
 
-  list_insert_ordered(&sleeping_threads, &(st.elem), thread_earlier_wake_up, NULL);
+  list_insert_ordered(&sleeping_threads, &(st->elem), thread_earlier_wake_up, NULL);
 
-  sema_down(st.sema);
+  sema_down(st->sema);
 }
 
 
@@ -219,12 +219,13 @@ timer_sleep (int64_t ticks)
   {
     ticks++;
     thread_tick ();
-    int64_t t = timer_ticks ();
-    struct sleeping_thread* st = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
+    
+    struct sleeping_thread* st = list_entry(list_begin(&sleeping_threads), struct sleeping_thread, elem);
     while (!list_empty(&sleeping_threads) && st->wake_up_tick <= ticks) {
         list_pop_front(&sleeping_threads);
-        st = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
         sema_up(st->sema);
+        st = list_entry(list_begin(&sleeping_threads), struct sleeping_thread, elem);
+        
     }
   }
 
