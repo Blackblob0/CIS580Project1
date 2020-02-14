@@ -45,6 +45,16 @@ thread_earlier_wake_up(const struct list_elem* a_, const struct list_elem* b_,
     return a->wake_up_tick > b->wake_up_tick;
 }
 
+/* Sets up a sleepint_thread */
+void
+sleeping_thread_init(struct sleeping_thread* st) {
+  ASSERT (st != NULL);
+
+  struct semaphore sema;
+  sema_init(&sema, 0);
+  st->sema = &sema;
+}
+
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -109,17 +119,14 @@ timer_sleep (int64_t ticks)
   int64_t start = timer_ticks ();
   ASSERT (intr_get_level () == INTR_ON);
 
-  struct sleeping_thread* st = malloc(sizeof(struct sleeping_thread));
-  struct semaphore* sema;
-  sema_init(sema, 0);
-  st->sema = sema;
-  st->wake_up_tick = start + ticks;
+  // Go to sleep
+  struct sleeping_thread st;
+  sleeping_thread_init(&st);
+  st.wake_up_tick = start + ticks;
 
-  list_insert_ordered(&sleeping_threads, &(st->elem), thread_earlier_wake_up, NULL);
+  list_insert_ordered(&sleeping_threads, &(st.elem), thread_earlier_wake_up, NULL);
 
-  sema_down(sema);
-  //TODO Figure out why sema is NULL
-  // Make threads sleep and wakeup
+  sema_down(st.sema);
 }
 
 
@@ -212,12 +219,12 @@ timer_sleep (int64_t ticks)
   {
     ticks++;
     thread_tick ();
-
-    struct sleeping_thread* first_sleeping_thread = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
-    while (list_head(&sleeping_threads) != NULL && first_sleeping_thread->wake_up_tick <= ticks) {
-        sema_up(first_sleeping_thread->sema);
+    int64_t t = timer_ticks ();
+    struct sleeping_thread* st = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
+    while (!list_empty(&sleeping_threads) && st->wake_up_tick <= ticks) {
         list_pop_front(&sleeping_threads);
-        first_sleeping_thread = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
+        st = list_entry(list_head(&sleeping_threads), struct sleeping_thread, elem);
+        sema_up(st->sema);
     }
   }
 

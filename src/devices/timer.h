@@ -14,6 +14,8 @@ struct sleeping_thread {
 	struct list_elem elem;
 };
 
+void sleeping_thread_init(struct sleeping_thread *);
+
 void timer_init (void);
 void timer_calibrate (void);
 

@@ -6,7 +6,7 @@
         {
             "label": "alarm-multiple",
             "type": "shell",
-            "command": "cd ~/cis520/pintos/src/threads/build && /home/j/jdeweese1/cis520/pintos_group/src/utils/pintos --gdb -v -- run alarm-multiple",
+            "command": "cd ~/cis520/pintos/src/threads/build && /home/w/wwchan/cis520/pintos_group/src/utils/pintos --gdb -v -- run alarm-multiple",
             "group": {
                 "kind": "build",
                 "isDefault": true
