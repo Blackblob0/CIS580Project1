@@ -112,7 +112,7 @@ thread_sleeping_init(struct thread_sleeping* st, int64_t wake_up_tick) {
 
   list_insert_ordered(&sleeping_threads, &(st->elem), thread_earlier_wake_up, NULL);
 
-  sema_down(&sema);
+  sema_down(sema);
 }
 
 void
@@ -182,8 +182,6 @@ thread_start (void)
 void
 thread_tick (void) 
 {
-  thread_sleeping_wake ();
-
   struct thread *t = thread_current ();
 
   /* Update statistics. */
@@ -621,7 +619,7 @@ thread_schedule_tail (struct thread *prev)
 static void
 schedule (void) 
 {
-  // thread_sleeping_wake ();
+  thread_sleeping_wake ();
 
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
