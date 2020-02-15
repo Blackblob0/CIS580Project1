@@ -21,8 +21,6 @@
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 
-static struct list sleeping_threads;
-
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
 static unsigned loops_per_tick;
@@ -33,28 +31,6 @@ static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
-/* Returns true if thread A will wake up before B, false
-   otherwise. */
-static bool
-thread_earlier_wake_up(const struct list_elem* a_, const struct list_elem* b_,
-    void* aux UNUSED)
-{
-    const struct sleeping_thread* a = list_entry(a_, struct sleeping_thread, elem);
-    const struct sleeping_thread* b = list_entry(b_, struct sleeping_thread, elem);
-
-    return a->wake_up_tick > b->wake_up_tick;
-}
-
-/* Sets up a sleepint_thread */
-void
-sleeping_thread_init(struct sleeping_thread* st) {
-  ASSERT (st != NULL);
-
-  struct semaphore sema;
-  sema_init(&sema, 0);
-  st->sema = &sema;
-}
-
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -62,7 +38,6 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
-  list_init(&sleeping_threads);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -112,7 +87,6 @@ timer_elapsed (int64_t then)
 
 /* Sleeps for approximately TICKS timer ticks.  Interrupts must
    be turned on. */
-// timer_sleep correctish
 void
 timer_sleep (int64_t ticks)
 {
@@ -120,13 +94,8 @@ timer_sleep (int64_t ticks)
   ASSERT (intr_get_level () == INTR_ON);
 
   // Go to sleep
-  struct sleeping_thread * st = malloc(sizeof(struct sleeping_thread));
-  sleeping_thread_init(st);
-  st->wake_up_tick = start + ticks;
-
-  list_insert_ordered(&sleeping_threads, &(st->elem), thread_earlier_wake_up, NULL);
-
-  sema_down(st->sema);
+  struct thread_sleeping * st = malloc(sizeof(struct thread_sleeping));
+  thread_sleeping_init(st, start + ticks);
 }
 
 
@@ -219,14 +188,6 @@ timer_sleep (int64_t ticks)
   {
     ticks++;
     thread_tick ();
-    
-    struct sleeping_thread* st = list_entry(list_begin(&sleeping_threads), struct sleeping_thread, elem);
-    while (!list_empty(&sleeping_threads) && st->wake_up_tick <= ticks) {
-        list_pop_front(&sleeping_threads);
-        sema_up(st->sema);
-        st = list_entry(list_begin(&sleeping_threads), struct sleeping_thread, elem);
-        
-    }
   }
 
 /* Returns true if LOOPS iterations waits for more than one timer

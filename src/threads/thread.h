@@ -102,6 +102,15 @@ struct thread
     unsigned magic;                     /* Detects stack overflow. */
   };
 
+struct thread_sleeping {
+	struct semaphore* sema;
+	int64_t wake_up_tick;
+	struct list_elem elem;
+};
+
+void thread_sleeping_init (struct thread_sleeping *, int64_t wake_up_tick);
+void thread_sleeping_wake (void);
+
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */

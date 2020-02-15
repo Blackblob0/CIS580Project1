@@ -4,6 +4,7 @@
 #include <random.h>
 #include <stdio.h>
 #include <string.h>
+#include "lib/kernel/list.h"
 #include "threads/flags.h"
 #include "threads/interrupt.h"
 #include "threads/intr-stubs.h"
@@ -23,6 +24,9 @@
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
 static struct list ready_list;
+
+/* List of processes that are sleeping. */
+static struct list sleeping_threads;
 
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
@@ -83,6 +87,49 @@ thread_higher_priority(const struct list_elem* a_, const struct list_elem* b_,
     return a->priority > b->priority;
 }
 
+/* Returns true if thread A will wake up before B, false
+   otherwise. */
+static bool
+thread_earlier_wake_up(const struct list_elem* a_, const struct list_elem* b_,
+    void* aux UNUSED)
+{
+    const struct thread_sleeping* a = list_entry(a_, struct thread_sleeping, elem);
+    const struct thread_sleeping* b = list_entry(b_, struct thread_sleeping, elem);
+
+    return a->wake_up_tick < b->wake_up_tick;
+}
+
+/* Sets up a sleepint_thread */
+void
+thread_sleeping_init(struct thread_sleeping* st, int64_t wake_up_tick) {
+  ASSERT (st != NULL);
+
+  struct semaphore * sema = malloc(sizeof(struct semaphore));
+  sema_init(sema, 0);
+  st->sema = sema;
+  
+  st->wake_up_tick = wake_up_tick;
+
+  list_insert_ordered(&sleeping_threads, &(st->elem), thread_earlier_wake_up, NULL);
+
+  sema_down(&sema);
+}
+
+void
+thread_sleeping_wake() {
+    struct thread_sleeping* st = list_entry(list_begin(&sleeping_threads), struct thread_sleeping, elem);
+    while (!list_empty(&sleeping_threads) && st->wake_up_tick <= idle_ticks + user_ticks + kernel_ticks) {
+        sema_up(st->sema);
+        list_pop_front(&sleeping_threads);
+
+        // free (st -> sema);
+        // free (st);
+
+        st = list_entry(list_begin(&sleeping_threads), struct thread_sleeping, elem);
+        
+    }
+}
+
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
@@ -104,6 +151,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  list_init (&sleeping_threads);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -134,6 +182,8 @@ thread_start (void)
 void
 thread_tick (void) 
 {
+  thread_sleeping_wake ();
+
   struct thread *t = thread_current ();
 
   /* Update statistics. */
@@ -352,7 +402,7 @@ void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
-  if (list_entry(list_head(&ready_list), struct thread, elem)->priority > new_priority)
+  if (list_entry(list_begin(&ready_list), struct thread, elem)->priority > new_priority)
       thread_yield();
 }
 
@@ -571,6 +621,8 @@ thread_schedule_tail (struct thread *prev)
 static void
 schedule (void) 
 {
+  // thread_sleeping_wake ();
+
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
