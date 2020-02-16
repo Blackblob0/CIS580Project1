@@ -103,7 +103,7 @@ thread_earlier_wake_up(const struct list_elem* a_, const struct list_elem* b_,
 void
 thread_sleeping_init(struct thread_sleeping* st, int64_t wake_up_tick) {
   ASSERT (st != NULL);
-
+  
   struct semaphore * sema = malloc(sizeof(struct semaphore));
   sema_init(sema, 0);
   st->sema = sema;
@@ -301,8 +301,13 @@ thread_unblock (struct thread *t)
   t->status = THREAD_READY;
   intr_set_level (old_level);
 
-  //if (t->priority > thread_get_priority())
-  //    thread_yield();
+
+  /* cur->status == THREAD_RUNNING means that this was called to schedule a thread
+      after blocking it so we can't get the priority of thread_current ()*/
+  struct thread * cur = running_thread ();
+
+  if (cur != idle_thread && cur->status == THREAD_RUNNING && t->priority > thread_get_priority())
+     thread_yield();
 }
 
 /* Returns the name of the running thread. */
@@ -400,7 +405,8 @@ void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
-  if (list_entry(list_begin(&ready_list), struct thread, elem)->priority > new_priority)
+  struct thread * first_thread = list_entry(list_begin(&ready_list), struct thread, elem);
+  if (first_thread->priority > new_priority)
       thread_yield();
 }
 
@@ -620,7 +626,7 @@ static void
 schedule (void) 
 {
   thread_sleeping_wake ();
-
+  
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
