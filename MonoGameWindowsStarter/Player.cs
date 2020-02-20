@@ -13,6 +13,7 @@ namespace MonoGameWindowsStarter {
     public class Player : GameObject {
         Texture2D texturePlayer;
         ArrayList[] InteractibleObjects;
+        Axis1D InteractibleObjectsCollisionAxis = new Axis1D();
 
         public Vector2 startingPosition;
         public Vector2 playerVelocity = Vector2.Zero;
@@ -30,6 +31,10 @@ namespace MonoGameWindowsStarter {
         }
 
         public override void LoadContent() {
+            GameObjectIterator(InteractibleObjects, (obj) => {
+                InteractibleObjectsCollisionAxis.AddGameObject(obj);
+            });
+
             texturePlayer = game.Content.Load<Texture2D>("Sprites/Player");
             sound_player_jump = game.Content.Load<SoundEffect>("SFX/Player-Jump");
         }
@@ -45,53 +50,57 @@ namespace MonoGameWindowsStarter {
 
             // Move the player
             if (playerVelocity != Vector2.Zero) {
-                CollisionR.X += playerVelocity.X;
-                CollisionR.Y -= playerVelocity.Y;
+                Collider.X += playerVelocity.X;
+                Collider.Y -= playerVelocity.Y;
 
                 //Check for Collisions
-                GameObjectIterator(InteractibleObjects, (obj) => {
-                    switch (obj) {
-                        case Wall wall:
-                            if (CollisionR.CollidesWith(wall.CollisionR)) {
-                                playerVelocity.Y = 0;
-                                CollisionR.Y = wall.CollisionR.Y - CollisionR.Height;
-
-                                if (game.newKeyboardState.IsKeyDown(Keys.Up)) {
-                                    playerVelocity.Y += jumpSpeed;
-                                    sound_player_jump.Play();
-                                }
-                                if (game.newKeyboardState.IsKeyUp(Keys.Right) && playerVelocity.X > 0)
-                                    if (playerVelocity.X > moveAccel)
-                                        playerVelocity.X -= moveAccel;
-                                    else
-                                        playerVelocity.X = 0;
-
-                                if (game.newKeyboardState.IsKeyUp(Keys.Left) && playerVelocity.X < 0)
-                                    if (playerVelocity.X < moveAccel)
-                                        playerVelocity.X += moveAccel;
-                                    else
-                                        playerVelocity.X = 0;
-                            }
-                            break;
-                        case Coin coin:
-                            if (CollisionR.CollidesWith(coin.CollisionC)) {
-                                coin.Collect();
-                            }
-                            break;
-                    }
-                });
+                CollideWithObjects();
             }
 
             // Reset Player on KeyPress V
             if (game.newKeyboardState.IsKeyDown(Keys.V) && game.oldKeyboardState.IsKeyUp(Keys.V)) {
-                CollisionR.X = startingPosition.X;
-                CollisionR.Y = startingPosition.Y;
+                Collider.X = startingPosition.X;
+                Collider.Y = startingPosition.Y;
             }
         }
 
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch, bool showHitBoxes) {
-            base.Draw(gameTime, spriteBatch, showHitBoxes, Color.Green);
-            spriteBatch.Draw(texturePlayer, CollisionR, Color.Black);
+        private void CollideWithObjects() {
+            foreach (GameObject obj in InteractibleObjectsCollisionAxis.QueryRange(Collider.X, Collider.X + Collider.Width)) {
+                switch (obj) {
+                    case Wall wall:
+                        if (Collider.CollidesWith(wall.Collider)) {
+                            playerVelocity.Y = 0;
+                            Collider.Y = wall.Collider.Y - ((CollisionRectangle)Collider).Height;
+
+                            if (game.newKeyboardState.IsKeyDown(Keys.Up)) {
+                                playerVelocity.Y += jumpSpeed;
+                                sound_player_jump.Play();
+                            }
+                            if (game.newKeyboardState.IsKeyUp(Keys.Right) && playerVelocity.X > 0)
+                                if (playerVelocity.X > moveAccel)
+                                    playerVelocity.X -= moveAccel;
+                                else
+                                    playerVelocity.X = 0;
+
+                            if (game.newKeyboardState.IsKeyUp(Keys.Left) && playerVelocity.X < 0)
+                                if (playerVelocity.X < moveAccel)
+                                    playerVelocity.X += moveAccel;
+                                else
+                                    playerVelocity.X = 0;
+                        }
+                        break;
+                    case Coin coin:
+                        if (Collider.CollidesWith(coin.Collider)) {
+                            coin.Collect();
+                        }
+                        break;
+                }
+            }
+        }
+
+        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch) {
+            base.Draw(gameTime, spriteBatch);
+            spriteBatch.Draw(texturePlayer, Collider.ToRectangle(), Color.Black);
 
         }
     }

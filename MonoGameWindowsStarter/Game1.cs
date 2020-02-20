@@ -17,7 +17,6 @@ namespace MonoGameWindowsStarter {
 
         public KeyboardState oldKeyboardState;
         public KeyboardState newKeyboardState;
-        bool showHitBoxes = false;
         public int hitBoxTransparency;
         public Player player;
 
@@ -105,10 +104,6 @@ namespace MonoGameWindowsStarter {
             GameObject.GameObjectIterator(GameObjects, (obj) => {
                 obj.Update();
             });
-
-
-            if (newKeyboardState.IsKeyDown(Keys.X) && oldKeyboardState.IsKeyUp(Keys.X))
-                showHitBoxes = !showHitBoxes;
         }
 
         /// <summary>
@@ -120,9 +115,9 @@ namespace MonoGameWindowsStarter {
 
             // TODO: Add your drawing code here
             spriteBatch.Begin();
-            player.Draw(gameTime, spriteBatch, showHitBoxes);
+            player.Draw(gameTime, spriteBatch);
             GameObject.GameObjectIterator(GameObjects, (obj) => {
-                obj.Draw(gameTime, spriteBatch, showHitBoxes);
+                obj.Draw(gameTime, spriteBatch);
             });
             spriteBatch.End();
 
