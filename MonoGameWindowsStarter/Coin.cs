@@ -10,17 +10,18 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace MonoGameWindowsStarter {
     public class Coin : GameObject {
-        public enum State { Active, Collected };
-        public State state = State.Active;
+        public CoinState State;
+        public CoinActiveState ActiveState;
+        public CoinCollectedState CollectedState;
 
-        static SpriteAnimation coin_spin = null;
-        static SoundEffect sound_coin_collect = null;
-
-        
-        int current_frame = 1;
+        public static SpriteAnimation coin_spin = null;
+        public static SoundEffect sound_coin_collect = null;
 
         public Coin(Game1 game, float X, float Y) : base(game, X, Y, 10) {
             game.Coins.Add(this);
+            ActiveState = new CoinActiveState(this);
+            CollectedState = new CoinCollectedState(this);
+            State = ActiveState;
         }
         public override void LoadContent() {
             if (coin_spin == null) {
@@ -34,40 +35,13 @@ namespace MonoGameWindowsStarter {
         }
 
         public override void Update() {
-            //Reset coins on Keypress C
-            if (state == State.Collected && game.newKeyboardState.IsKeyDown(Keys.C) && game.oldKeyboardState.IsKeyUp(Keys.C)) {
-                state = State.Active;
-                Collider.Active = true;
-            }
-                
+            State.Update();
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch) {
             base.Draw(gameTime, spriteBatch);
-
-            switch (state) {
-                case State.Active:
-                    current_frame = (current_frame + (int)gameTime.ElapsedGameTime.TotalMilliseconds / 15) % 42;
-                    coin_spin[current_frame].Draw(spriteBatch, Collider.ToRectangle(), Color.White);
-                    break;
-                case State.Collected:
-                    spriteBatch.DrawString(
-                    game.spriteFont,
-                    "500",
-                    new Vector2(Collider.X, Collider.Y - 50),
-                    Color.White
-                    );
-                    break;
-            }
+            State.Draw(gameTime, spriteBatch);
             
-        }
-
-        public void Collect() {
-            if (state == State.Active) {
-                Collider.Active = false;
-                state = State.Collected;
-                sound_coin_collect.Play();
-            }
         }
     }
 }

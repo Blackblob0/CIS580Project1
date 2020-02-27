@@ -54,6 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sprite.cs" />
     <Compile Include="SpriteAnimation.cs" />
+    <Compile Include="CoinState.cs" />
     <Compile Include="Wall.cs" />
   </ItemGroup>
   <ItemGroup>

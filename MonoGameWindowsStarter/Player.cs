@@ -90,8 +90,8 @@ namespace MonoGameWindowsStarter {
                         }
                         break;
                     case Coin coin:
-                        if (Collider.CollidesWith(coin.Collider)) {
-                            coin.Collect();
+                        if (coin.State is CoinActiveState && Collider.CollidesWith(coin.Collider)) {
+                            coin.State.SwitchState(coin.CollectedState);
                         }
                         break;
                 }

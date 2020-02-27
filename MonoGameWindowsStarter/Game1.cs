@@ -112,9 +112,11 @@ namespace MonoGameWindowsStarter {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+            Vector2 offset = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2) - new Vector2(player.Collider.X, player.Collider.Y);
+            Matrix transform = Matrix.CreateTranslation(offset.X, offset.Y, 0);
 
             // TODO: Add your drawing code here
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, transform);
             player.Draw(gameTime, spriteBatch);
             GameObject.GameObjectIterator(GameObjects, (obj) => {
                 obj.Draw(gameTime, spriteBatch);
