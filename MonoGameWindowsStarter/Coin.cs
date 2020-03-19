@@ -18,7 +18,6 @@ namespace MonoGameWindowsStarter {
         public static SoundEffect sound_coin_collect = null;
 
         public Coin(Game1 game, float X, float Y) : base(game, X, Y, 10) {
-            game.Coins.Add(this);
             ActiveState = new CoinActiveState(this);
             CollectedState = new CoinCollectedState(this);
             State = ActiveState;

@@ -9,9 +9,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace MonoGameWindowsStarter {
     public class Wall : GameObject {
-        public Wall(Game1 game, float X, float Y, float Width, float Height) : base(game, X, Y, Width, Height) {
-            game.Walls.Add(this);
-        }
+        public Wall(Game1 game, float X, float Y, float Width, float Height) : base(game, X, Y, Width, Height) { }
 
         public override void LoadContent() { }
 

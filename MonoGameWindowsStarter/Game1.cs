@@ -15,6 +15,8 @@ namespace MonoGameWindowsStarter {
         public ArrayList Coins = new ArrayList();
         public ArrayList[] GameObjects;
 
+        public ArrayList Levels = new ArrayList();
+
         public KeyboardState oldKeyboardState;
         public KeyboardState newKeyboardState;
         public int hitBoxTransparency;
@@ -32,10 +34,7 @@ namespace MonoGameWindowsStarter {
 
             GameObjects = new ArrayList[] { Walls, Coins };
 
-            new Player(this, 500, 500, 125, 250);
-            new Wall(this, -1000, 1000, 3920, 100);
-            new Coin(this, 800, 600);
-            new Coin(this, 950, 800);
+            player = new Player(this, 0, 0);
         }
 
         /// <summary>
@@ -67,6 +66,12 @@ namespace MonoGameWindowsStarter {
             pixel = Content.Load<Texture2D>("Sprites/Pixel");
             circle = Content.Load<Texture2D>("Sprites/Circle");
             spriteFont = Content.Load<SpriteFont>("Fonts/MangaTemple18");
+
+            Levels.Add(Content.Load<Level>("Levels/Level1"));
+            Levels.Add(Content.Load<Level>("Levels/Level2"));
+            Levels.Add(Content.Load<Level>("Levels/Level3"));
+            foreach (Level level in Levels) level.SetGame(this);
+            ((Level)Levels[0]).LoadLevel();
 
             player.LoadContent();
 
@@ -104,6 +109,11 @@ namespace MonoGameWindowsStarter {
             GameObject.GameObjectIterator(GameObjects, (obj) => {
                 obj.Update();
             });
+
+            if (newKeyboardState.IsKeyDown(Keys.NumPad1) && oldKeyboardState.IsKeyUp(Keys.NumPad1)) ((Level)Levels[0]).LoadLevel();
+            if (newKeyboardState.IsKeyDown(Keys.NumPad2) && oldKeyboardState.IsKeyUp(Keys.NumPad2)) ((Level)Levels[1]).LoadLevel();
+            if (newKeyboardState.IsKeyDown(Keys.NumPad3) && oldKeyboardState.IsKeyUp(Keys.NumPad3)) ((Level)Levels[2]).LoadLevel();
+
         }
 
         /// <summary>

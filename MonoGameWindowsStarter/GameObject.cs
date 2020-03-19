@@ -11,7 +11,6 @@ using Microsoft.Xna.Framework.Input;
 namespace MonoGameWindowsStarter {
     abstract public class GameObject {
         public Game1 game;
-        public enum CollisionType { RECTANGLE, CIRCLE };
         public ICollider Collider;
 
         public GameObject(Game1 game, float X, float Y, float Radius) {

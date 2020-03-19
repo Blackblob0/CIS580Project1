@@ -35,7 +35,7 @@ namespace MonoGameWindowsStarter {
             this.gameObject = gameObject;
         }
     }
-    class Axis1D {
+    public class Axis1D {
         Dictionary<GameObject, Item> items = new Dictionary<GameObject, Item>();
         List<ItemPoint> endPoints = new List<ItemPoint>();
         public void AddGameObject(GameObject gameObject) {
@@ -67,6 +67,11 @@ namespace MonoGameWindowsStarter {
 
             }
             return itemsInRange;
+        }
+
+        public void Clear() {
+            items.Clear();
+            endPoints.Clear();
         }
     }
 }

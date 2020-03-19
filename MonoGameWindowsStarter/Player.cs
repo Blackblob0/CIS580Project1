@@ -12,8 +12,8 @@ using System.Collections;
 namespace MonoGameWindowsStarter {
     public class Player : GameObject {
         Texture2D texturePlayer;
-        ArrayList[] InteractibleObjects;
-        Axis1D InteractibleObjectsCollisionAxis = new Axis1D();
+        public ArrayList[] InteractibleObjects;
+        public Axis1D InteractibleObjectsCollisionAxis = new Axis1D();
 
         public Vector2 startingPosition;
         public Vector2 playerVelocity = Vector2.Zero;
@@ -24,17 +24,13 @@ namespace MonoGameWindowsStarter {
         float moveSpeed = 10;
         float jumpSpeed = 25;
 
-        public Player(Game1 game, float X, float Y, float Width, float Height) : base(game, X, Y, Width, Height) {
+        public Player(Game1 game, float X, float Y) : base(game, X, Y, 125, 250) {
             startingPosition = new Vector2(X, Y);
             InteractibleObjects = new ArrayList[] { game.Walls, game.Coins };
             game.player = this;
         }
 
         public override void LoadContent() {
-            GameObjectIterator(InteractibleObjects, (obj) => {
-                InteractibleObjectsCollisionAxis.AddGameObject(obj);
-            });
-
             texturePlayer = game.Content.Load<Texture2D>("Sprites/Player");
             sound_player_jump = game.Content.Load<SoundEffect>("SFX/Player-Jump");
         }
