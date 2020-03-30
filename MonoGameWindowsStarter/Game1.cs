@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections;
@@ -10,6 +11,9 @@ namespace MonoGameWindowsStarter {
     public class Game1 : Game {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        ParticleSystem rain;
+        ParticleSystem sparks;
+        ParticleSystem fire;
 
         public ArrayList Walls = new ArrayList();
         public ArrayList Coins = new ArrayList();
@@ -79,7 +83,76 @@ namespace MonoGameWindowsStarter {
                 obj.LoadContent();
             });
 
-            // TODO: use this.Content to load your game content here
+            Random random = new Random();
+
+            rain = new ParticleSystem(GraphicsDevice, 1000, pixel);
+            rain.SpawnPerFrame = 2;
+
+            rain.SpawnParticle = (ref Particle particle) =>
+            {
+                particle.Position = new Vector2(MathHelper.Lerp(GraphicsDevice.Viewport.Bounds.Left, GraphicsDevice.Viewport.Bounds.Right, (float)random.NextDouble()), 0);
+                particle.Velocity = new Vector2(
+                    0,
+                    MathHelper.Lerp(400, 500, (float)random.NextDouble()) // Y between 0 and 100
+                    );
+                particle.Acceleration = new Vector2(0, MathHelper.Lerp(0, 10, (float)random.NextDouble()));
+                particle.Color = Color.Blue;
+                particle.Scale = 3f;
+                particle.Life = 10.0f;
+            };
+
+            rain.UpdateParticle = (float deltaT, ref Particle particle) =>
+            {
+                particle.Velocity += deltaT * particle.Acceleration;
+                particle.Position += deltaT * particle.Velocity;
+                particle.Life -= deltaT;
+            };
+
+            sparks = new ParticleSystem(GraphicsDevice, 1000, pixel);
+            sparks.SpawnPerFrame = 2;
+
+            sparks.SpawnParticle = (ref Particle particle) => {
+                particle.Position = new Vector2(100,100);
+                particle.Velocity = new Vector2(
+                    MathHelper.Lerp(-500, 500, (float)random.NextDouble()),
+                    MathHelper.Lerp(-500, 500, (float)random.NextDouble()) // Y between 0 and 100
+                    );
+                particle.Acceleration = new Vector2(0, 0);
+                particle.Color = Color.White;
+                particle.Scale = 3f;
+                particle.Life = 0.5f;
+            };
+
+            sparks.UpdateParticle = (float deltaT, ref Particle particle) => {
+                particle.Velocity += deltaT * particle.Acceleration;
+                particle.Position += deltaT * particle.Velocity;
+                particle.Life -= deltaT;
+            };
+
+            fire = new ParticleSystem(GraphicsDevice, 1000, pixel);
+            fire.SpawnPerFrame = 2;
+
+            fire.SpawnParticle = (ref Particle particle) => {
+                particle.Position = new Vector2(100, 600);
+                particle.Velocity = new Vector2(
+                    MathHelper.Lerp(-50, 50, (float)random.NextDouble()),
+                    MathHelper.Lerp(-50, 50, (float)random.NextDouble())
+                    );
+                particle.Acceleration = new Vector2(0, MathHelper.Lerp(-300, -200, (float)random.NextDouble()));
+                particle.Color = Color.Red;
+                particle.Scale = 4f;
+                particle.Life = 1f;
+            };
+
+            fire.UpdateParticle = (float deltaT, ref Particle particle) => {
+                particle.Velocity += deltaT * particle.Acceleration;
+                particle.Position += deltaT * particle.Velocity;
+                particle.Scale -= 0.05f;
+                particle.Life -= deltaT;
+            };
+
+
+
         }
 
         /// <summary>
@@ -114,6 +187,10 @@ namespace MonoGameWindowsStarter {
             if (newKeyboardState.IsKeyDown(Keys.NumPad2) && oldKeyboardState.IsKeyUp(Keys.NumPad2)) ((Level)Levels[1]).LoadLevel();
             if (newKeyboardState.IsKeyDown(Keys.NumPad3) && oldKeyboardState.IsKeyUp(Keys.NumPad3)) ((Level)Levels[2]).LoadLevel();
 
+            rain.Update(gameTime);
+            sparks.Update(gameTime);
+            fire.Update(gameTime);
+
         }
 
         /// <summary>
@@ -134,6 +211,10 @@ namespace MonoGameWindowsStarter {
             spriteBatch.End();
 
             base.Draw(gameTime);
+
+            rain.Draw();
+            sparks.Draw();
+            fire.Draw();
         }
     }
 }
