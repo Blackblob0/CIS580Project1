@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace MonoGameWindowsStarter {
-    abstract public class GameObject {
+    abstract public class GameObject : ISprite {
         public Game1 game;
         public ICollider Collider;
 
@@ -27,7 +27,7 @@ namespace MonoGameWindowsStarter {
 
         abstract public void Update();
 
-        public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) {
+        public virtual void Draw(SpriteBatch spriteBatch, GameTime gameTime) {
 
 #if DEBUG
             Color color = Color.White;

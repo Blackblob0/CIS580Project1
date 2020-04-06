@@ -94,8 +94,8 @@ namespace MonoGameWindowsStarter {
             }
         }
 
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch) {
-            base.Draw(gameTime, spriteBatch);
+        public override void Draw(SpriteBatch spriteBatch, GameTime gameTime) {
+            base.Draw(spriteBatch, gameTime);
             spriteBatch.Draw(texturePlayer, Collider.ToRectangle(), Color.Black);
 
         }

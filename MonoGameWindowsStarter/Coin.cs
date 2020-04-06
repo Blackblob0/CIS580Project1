@@ -38,8 +38,8 @@ namespace MonoGameWindowsStarter {
             State.Update();
         }
 
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch) {
-            base.Draw(gameTime, spriteBatch);
+        public override void Draw(SpriteBatch spriteBatch, GameTime gameTime) {
+            base.Draw(spriteBatch, gameTime);
             State.Draw(gameTime, spriteBatch);
             
         }

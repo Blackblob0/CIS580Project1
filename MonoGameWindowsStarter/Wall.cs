@@ -15,8 +15,8 @@ namespace MonoGameWindowsStarter {
 
         public override void Update() { }
 
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch) {
-            base.Draw(gameTime, spriteBatch);
+        public override void Draw(SpriteBatch spriteBatch, GameTime gameTime) {
+            base.Draw(spriteBatch, gameTime);
             spriteBatch.Draw(game.pixel, Collider.ToRectangle(), Color.Blue);
         }
 

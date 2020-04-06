@@ -26,16 +26,6 @@
 /processor:LevelProcessor
 /build:Levels/Level1.lv
 
-#begin Levels/Level1.lv
-/importer:LevelImporter
-/processor:LevelProcessor
-/build:Levels/Level1.lv
-
-#begin Levels/Level2.lv
-/importer:LevelImporter
-/processor:LevelProcessor
-/build:Levels/Level2.lv
-
 #begin Levels/Level2.lv
 /importer:LevelImporter
 /processor:LevelProcessor
@@ -45,6 +35,42 @@
 /importer:LevelImporter
 /processor:LevelProcessor
 /build:Levels/Level3.lv
+
+#begin Parallax/Background.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Parallax/Background.png
+
+#begin Parallax/Midground1.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Parallax/Midground1.png
+
+#begin Parallax/Midground2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Parallax/Midground2.png
 
 #begin SFX/Coin-Collect.wav
 /importer:WavImporter

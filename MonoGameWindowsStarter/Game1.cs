@@ -11,15 +11,12 @@ namespace MonoGameWindowsStarter {
     public class Game1 : Game {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        ParticleSystem rain;
-        ParticleSystem sparks;
-        ParticleSystem fire;
 
         public ArrayList Walls = new ArrayList();
         public ArrayList Coins = new ArrayList();
         public ArrayList[] GameObjects;
 
-        public ArrayList Levels = new ArrayList();
+        //public ArrayList Levels = new ArrayList();
 
         public KeyboardState oldKeyboardState;
         public KeyboardState newKeyboardState;
@@ -71,88 +68,55 @@ namespace MonoGameWindowsStarter {
             circle = Content.Load<Texture2D>("Sprites/Circle");
             spriteFont = Content.Load<SpriteFont>("Fonts/MangaTemple18");
 
-            Levels.Add(Content.Load<Level>("Levels/Level1"));
-            Levels.Add(Content.Load<Level>("Levels/Level2"));
-            Levels.Add(Content.Load<Level>("Levels/Level3"));
-            foreach (Level level in Levels) level.SetGame(this);
-            ((Level)Levels[0]).LoadLevel();
+            // Set up Parallax
+            var backgroundTexture = Content.Load<Texture2D>("Parallax/Background");
+            var backgroundSprite = new StaticSprite(backgroundTexture);
+            var backgroundLayer = new ParallaxLayer(this);
+            backgroundLayer.ScrollController = new PlayerTrackingScrollController(player, 0.1f);
+            backgroundLayer.Sprites.Add(backgroundSprite);
+            backgroundLayer.DrawOrder = 0;
+
+            var midgroundTextures = new Texture2D[]
+            {
+                Content.Load<Texture2D>("Parallax/Midground1"),
+                Content.Load<Texture2D>("Parallax/Midground2")
+            };
+            var midgroundSprites = new StaticSprite[]
+            {
+                new StaticSprite(midgroundTextures[0]),
+                new StaticSprite(midgroundTextures[1], new Vector2(3500, 0))
+            };
+            var midgroundLayer = new ParallaxLayer(this);
+            midgroundLayer.ScrollController = new PlayerTrackingScrollController(player, 0.4f);
+            midgroundLayer.Sprites.AddRange(midgroundSprites);
+            midgroundLayer.DrawOrder = 1;
+
+            var gameLayer = new ParallaxLayer(this);
+            gameLayer.ScrollController = new PlayerTrackingScrollController(player, 1.0f);
+            gameLayer.Sprites.Add(player);
+            gameLayer.DrawOrder = 2;
+
+
+            Components.Add(backgroundLayer);
+            Components.Add(midgroundLayer);
+            Components.Add(gameLayer);
+
+            //Levels.Add(Content.Load<Level>("Levels/Level1"));
+            //Levels.Add(Content.Load<Level>("Levels/Level2"));
+            //Levels.Add(Content.Load<Level>("Levels/Level3"));
+            //foreach (Level level in Levels) level.SetGame(this);
+            //((Level)Levels[0]).LoadLevel();
+
+            Level lv = Content.Load<Level>("Levels/Level1");
+            lv.SetGame(this);
+            lv.LoadLevel();
 
             player.LoadContent();
 
             GameObject.GameObjectIterator(GameObjects, (obj) => {
+                gameLayer.Sprites.Add(obj);
                 obj.LoadContent();
             });
-
-            Random random = new Random();
-
-            rain = new ParticleSystem(GraphicsDevice, 1000, pixel);
-            rain.SpawnPerFrame = 2;
-
-            rain.SpawnParticle = (ref Particle particle) =>
-            {
-                particle.Position = new Vector2(MathHelper.Lerp(GraphicsDevice.Viewport.Bounds.Left, GraphicsDevice.Viewport.Bounds.Right, (float)random.NextDouble()), 0);
-                particle.Velocity = new Vector2(
-                    0,
-                    MathHelper.Lerp(400, 500, (float)random.NextDouble()) // Y between 0 and 100
-                    );
-                particle.Acceleration = new Vector2(0, MathHelper.Lerp(0, 10, (float)random.NextDouble()));
-                particle.Color = Color.Blue;
-                particle.Scale = 3f;
-                particle.Life = 10.0f;
-            };
-
-            rain.UpdateParticle = (float deltaT, ref Particle particle) =>
-            {
-                particle.Velocity += deltaT * particle.Acceleration;
-                particle.Position += deltaT * particle.Velocity;
-                particle.Life -= deltaT;
-            };
-
-            sparks = new ParticleSystem(GraphicsDevice, 1000, pixel);
-            sparks.SpawnPerFrame = 2;
-
-            sparks.SpawnParticle = (ref Particle particle) => {
-                particle.Position = new Vector2(100,100);
-                particle.Velocity = new Vector2(
-                    MathHelper.Lerp(-500, 500, (float)random.NextDouble()),
-                    MathHelper.Lerp(-500, 500, (float)random.NextDouble()) // Y between 0 and 100
-                    );
-                particle.Acceleration = new Vector2(0, 0);
-                particle.Color = Color.White;
-                particle.Scale = 3f;
-                particle.Life = 0.5f;
-            };
-
-            sparks.UpdateParticle = (float deltaT, ref Particle particle) => {
-                particle.Velocity += deltaT * particle.Acceleration;
-                particle.Position += deltaT * particle.Velocity;
-                particle.Life -= deltaT;
-            };
-
-            fire = new ParticleSystem(GraphicsDevice, 1000, pixel);
-            fire.SpawnPerFrame = 2;
-
-            fire.SpawnParticle = (ref Particle particle) => {
-                particle.Position = new Vector2(100, 600);
-                particle.Velocity = new Vector2(
-                    MathHelper.Lerp(-50, 50, (float)random.NextDouble()),
-                    MathHelper.Lerp(-50, 50, (float)random.NextDouble())
-                    );
-                particle.Acceleration = new Vector2(0, MathHelper.Lerp(-300, -200, (float)random.NextDouble()));
-                particle.Color = Color.Red;
-                particle.Scale = 4f;
-                particle.Life = 1f;
-            };
-
-            fire.UpdateParticle = (float deltaT, ref Particle particle) => {
-                particle.Velocity += deltaT * particle.Acceleration;
-                particle.Position += deltaT * particle.Velocity;
-                particle.Scale -= 0.05f;
-                particle.Life -= deltaT;
-            };
-
-
-
         }
 
         /// <summary>
@@ -183,13 +147,9 @@ namespace MonoGameWindowsStarter {
                 obj.Update();
             });
 
-            if (newKeyboardState.IsKeyDown(Keys.NumPad1) && oldKeyboardState.IsKeyUp(Keys.NumPad1)) ((Level)Levels[0]).LoadLevel();
-            if (newKeyboardState.IsKeyDown(Keys.NumPad2) && oldKeyboardState.IsKeyUp(Keys.NumPad2)) ((Level)Levels[1]).LoadLevel();
-            if (newKeyboardState.IsKeyDown(Keys.NumPad3) && oldKeyboardState.IsKeyUp(Keys.NumPad3)) ((Level)Levels[2]).LoadLevel();
-
-            rain.Update(gameTime);
-            sparks.Update(gameTime);
-            fire.Update(gameTime);
+            //if (newKeyboardState.IsKeyDown(Keys.NumPad1) && oldKeyboardState.IsKeyUp(Keys.NumPad1)) ((Level)Levels[0]).LoadLevel();
+            //if (newKeyboardState.IsKeyDown(Keys.NumPad2) && oldKeyboardState.IsKeyUp(Keys.NumPad2)) ((Level)Levels[1]).LoadLevel();
+            //if (newKeyboardState.IsKeyDown(Keys.NumPad3) && oldKeyboardState.IsKeyUp(Keys.NumPad3)) ((Level)Levels[2]).LoadLevel();
 
         }
 
@@ -199,22 +159,7 @@ namespace MonoGameWindowsStarter {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            Vector2 offset = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2) - new Vector2(player.Collider.X, player.Collider.Y);
-            Matrix transform = Matrix.CreateTranslation(offset.X, offset.Y, 0);
-
-            // TODO: Add your drawing code here
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, transform);
-            player.Draw(gameTime, spriteBatch);
-            GameObject.GameObjectIterator(GameObjects, (obj) => {
-                obj.Draw(gameTime, spriteBatch);
-            });
-            spriteBatch.End();
-
             base.Draw(gameTime);
-
-            rain.Draw();
-            sparks.Draw();
-            fire.Draw();
         }
     }
 }
